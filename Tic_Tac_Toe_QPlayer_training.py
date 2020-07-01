@@ -1,6 +1,8 @@
 import numpy as np
 import tkinter as tk
 import copy
+from tqdm import tqdm
+
 import pickle
 from Q_Learning_Tic_Tac_Toe import Game, QPlayer     # Classes used for Tic Tac Toe
 
@@ -11,9 +13,9 @@ player2 = QPlayer(mark="O",epsilon = epsilon)
 game = Game(root, player1, player2)
 
 N_episodes = 200000
-for episodes in range(N_episodes):
+for episodes in tqdm(range(N_episodes)):
     game.play()
-    game.reset()
+    game.reset(log=False)
 
 Q = game.Q
 

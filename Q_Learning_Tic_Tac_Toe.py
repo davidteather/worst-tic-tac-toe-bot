@@ -2,13 +2,17 @@ import numpy as np
 import tkinter as tk
 import copy
 import pickle as pickle    # cPickle is for Python 2.x only; in Python 3, simply "import pickle" and the accelerated version will be used automatically if available
+import random
 
 class Game:
     def __init__(self, master, player1, player2, Q_learn=None, Q={}, alpha=0.3, gamma=0.9):
-        frame = tk.Frame()
+        frame = tk.Frame(master=master)
         frame.grid()
         self.master = master
         master.title("Tic Tac Toe")
+
+        self.winMessage = ['Congrats you won, not like it was difficult', 'Wow you beat the worst bot', 'You are so good at this game']
+        self.loseMessage = ['You lost to the WORST bot.', 'how????', 'I don\'t understand']
 
         self.player1 = player1
         self.player2 = player2
@@ -20,10 +24,10 @@ class Game:
         self.buttons = [[None for _ in range(3)] for _ in range(3)]
         for i in range(3):
             for j in range(3):
-                self.buttons[i][j] = tk.Button(frame, height=3, width=3, text=self.empty_text, command=lambda i=i, j=j: self.callback(self.buttons[i][j]))
+                self.buttons[i][j] = tk.Button(frame, height=3, width=16, text=self.empty_text,font=('arial',50,'bold'), command=lambda i=i, j=j: self.callback(self.buttons[i][j]))
                 self.buttons[i][j].grid(row=i, column=j)
 
-        self.reset_button = tk.Button(text="Reset", command=self.reset)
+        self.reset_button = tk.Button(text="Reset", command=self.reset, font=('arial',50,'bold'))
         self.reset_button.grid(row=3)
 
         self.Q_learn = Q_learn
@@ -88,12 +92,16 @@ class Game:
 
     def declare_outcome(self):
         if self.board.winner() is None:
-            print("Cat's game.")
+            self.reset_button.configure(text="Cat's game.")
         else:
-            print(("The game is over. The player with mark {mark} won!".format(mark=self.current_player.mark)))
+            if self.current_player.mark == "X":
+                self.reset_button.configure(text=random.choice(self.winMessage))
+            else:
+                self.reset_button.configure(text=random.choice(self.loseMessage))
 
-    def reset(self):
-        print("Resetting...")
+    def reset(self, log=True):
+        if log:
+            print("Resetting...")
         for i in range(3):
             for j in range(3):
                 self.buttons[i][j].configure(text=self.empty_text)
@@ -139,11 +147,11 @@ class Game:
         else:
             next_Qs = self.Q[next_state_key]             # The Q values represent the expected future reward for player X for each available move in the next state (after the move has been made)
             if self.current_player.mark == "X":
-                expected = reward + (self.gamma * max(next_Qs.values()))        # If the current player is X, the next player is O, and the move with the minimum Q value should be chosen according to our "sign convention"
+                expected = reward + (self.gamma * min(next_Qs.values()))        # If the current player is X, the next player is O, and the move with the minimum Q value should be chosen according to our "sign convention"
             elif self.current_player.mark == "O":
-                expected = reward + (self.gamma * min(next_Qs.values()))        # If the current player is O, the next player is X, and the move with the maximum Q vlue should be chosen
+                expected = reward + (self.gamma * max(next_Qs.values()))        # If the current player is O, the next player is X, and the move with the maximum Q vlue should be chosen
         change = self.alpha * (expected - self.Q[state_key][move])
-        self.Q[state_key][move] += change
+        self.Q[state_key][move] -= change
 
 
 class Board:
