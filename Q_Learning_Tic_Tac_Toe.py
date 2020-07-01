@@ -108,6 +108,7 @@ class Game:
         self.board = Board(grid=np.ones((3,3))*np.nan)
         self.current_player = self.player1
         self.other_player = self.player2
+        self.reset_button.configure(text="Reset")
         # np.random.seed(seed=0)      # Set the random seed to zero to see the Q-learning 'in action' or for debugging purposes
         self.play()
 
